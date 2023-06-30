@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom"
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
@@ -7,7 +7,6 @@ import classes from "./css/Categories.module.css";
 import CategoriesFormModal from "./Forms/CategoryForm"
 
 import { Outlet } from "react-router-dom";
-import { CategoryProvider } from "../context/CategoryContext";
 
 const Categories = () => {
     const CATEGORIES_URL = '/categories';
@@ -20,20 +19,24 @@ const Categories = () => {
 
     const navigate = useNavigate();
 
-    const getCategoriesElements = async () => {
-        const response = await axios.get(CATEGORIES_URL, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        });
+    const getCategoriesElements = useCallback(async () => { // Wrapped with useCallback
+        try {
+            const response = await axios.get(CATEGORIES_URL, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
 
-        getAllElements(response.data);
-    };
+            getAllElements(response.data);
+        } catch (error) {
+            console.error("Failed to fetch categories:", error);
+        }
+    }, [auth.token]);
 
     useEffect(() => {
         getCategoriesElements();
-    }, []);
+    }, [getCategoriesElements]);
 
     const modifyElement = (element) => {
         setEditingElement(element)
@@ -54,11 +57,11 @@ const Categories = () => {
             });
             getCategoriesElements();
 
-            if(id == category.id) {
+            if(id === category.id) {
                 navigate(``, { replace: true });
             }
         } catch (error) {
-
+            console.error("Failed to delete element: ", error)
         }
     };
 
@@ -72,7 +75,7 @@ const Categories = () => {
             {isModalOpen && <CategoriesFormModal editingElement={editingElement} setIsModalOpen={setIsModalOpen} refreshData={getCategoriesElements}/>}
             <div className={classes.sidePanel}>
                 <h3>Categories</h3> 
-                <button className={classes.addBtn} onClick={() => modifyElement()}>Add category</button>
+                <button className={classes.addBtn} onClick={() => addElement()}>Add category</button>
                 <ul>
                     <li>
                         <div className={classes.categoryContent}>

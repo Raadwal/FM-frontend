@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
-import useCategory from "../hooks/useCategory";
 import formatDate from "../hooks/formatDate";
 import classes from "./css/ExpensesDisplay.module.css"
 
 import ExpenseForm from "./Forms/ExpenseForm";
-import { useParams } from "react-router-dom";
 
 
 const AllExpenses = () => {
@@ -14,29 +12,32 @@ const AllExpenses = () => {
     const CATEGORIES_URL = '/categories';
 
     const { auth } = useAuth();
-    const { category } = useCategory();
     const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
     const [elements, getAllElements] = useState([]);
     const [editingExpenseElement, setEditingExpenseElement] = useState(null);
     
-    const getAllExpensesElements = async () => {
-        const response = await axios.get(`${EXPENSES_URL}`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        })
-        getAllElements(response.data)
-    }
-
+    const getAllExpensesElements = useCallback(async () => {
+        try {
+            const response = await axios.get(`${EXPENSES_URL}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
+            getAllElements(response.data);
+        } catch (error) {
+            console.error("Failed to fetch all expense elements:", error);
+        }
+    }, [auth.token]);
+    
     const modifyExpenseElement = (element) => {
         setEditingExpenseElement(element);
         setIsExpenseModalOpen(true);
-    }
-
+    };
+    
     useEffect(() => {
         getAllExpensesElements();
-    }, []);
+    }, [getAllExpensesElements]);
 
     const deleteElement = async (expense) => {
         try {
@@ -47,7 +48,7 @@ const AllExpenses = () => {
             });
             getAllExpensesElements();
         } catch (error) {
-            
+            console.error("Failed to delete element: ", error)
         }
     }
 

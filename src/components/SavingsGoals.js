@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback  } from "react";
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import classes from "./css/Display.module.css"
@@ -13,19 +13,23 @@ const SavingsGoals = () => {
     const [elements, getAllElements] = useState([]);
     const [editingElement, setEditingElement] = useState(null);
 
-    const getUserElements = async () => {
-        const response = await axios.get(SAVINGS_GOALS_URL, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        })
-        getAllElements(response.data)
-    }
+    const getUserElements = useCallback(async () => {
+        try {
+            const response = await axios.get(SAVINGS_GOALS_URL, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
+            getAllElements(response.data);
+        } catch (error) {
+            console.error("Failed to fetch user's savings goals:", error);
+        }
+    }, [auth.token]);
 
     useEffect(() => {
         getUserElements();
-    }, []);
+    }, [getUserElements]);
 
     const addElement = () => {
         setEditingElement(null)
@@ -46,7 +50,7 @@ const SavingsGoals = () => {
             });
             getUserElements();
         } catch (error) {
-            
+            console.error("Failed to delete element: ", error)
         }
     }
 

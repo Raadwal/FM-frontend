@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom"
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
@@ -9,9 +9,7 @@ import classes from "./css/BudgetsDisplay.module.css"
 import BudgetForm from "./Forms/BudgetForm";
 import ExpenseForm from "./Forms/ExpenseForm";
 
-
 const Budgets = () => {
-    const CATEGORIES_URL = '/categories'
     const BUDGETS_URL = '/categories'
     
     const { auth } = useAuth();
@@ -23,19 +21,24 @@ const Budgets = () => {
 
     const navigate = useNavigate();
 
-    const getBudgetElements = async () => {
-        const response = await axios.get(`${BUDGETS_URL}/${category.id}/budget`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        })
-        getAllElements(response.data)
-    }
+    const getBudgetElements = useCallback(async () => {
+        try {
+            const response = await axios.get(`${BUDGETS_URL}/${category.id}/budget`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
+            getAllElements(response.data);
+            console.log(response.data)
+        } catch (error) {
+            console.error("Failed to fetch budget elements:", error);
+        }
+    }, [auth.token, category.id]);
 
     useEffect(() => {
         getBudgetElements();
-    }, [category]);
+    }, [category, getBudgetElements]);
 
     const addBudgetElement = () => {
         setEditingBudgetElement(null)
@@ -60,7 +63,7 @@ const Budgets = () => {
             });
             getBudgetElements();
         } catch (error) {
-            
+            console.error("Failed to delete element: ", error)
         }
     }
 

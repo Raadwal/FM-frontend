@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import useAuth from "../hooks/useAuth";
 import axios from "../api/axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -35,7 +35,7 @@ const Register = () => {
                 }
             );
 
-            if ( response.status = 200) {
+            if ( response.status === 200) {
                 const token = response.data;
                 setAuth(token)
     

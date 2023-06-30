@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import axios from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
 import useCategory from '../../hooks/useCategory';
@@ -49,7 +49,7 @@ const BudgetForm = ({ editingBudgetElement, setIsBudgetModalOpen,  refreshData }
             }
             setIsBudgetModalOpen(false);
         } catch (error) {
-            
+            console.error("Failed to save budget: ", error)
         }
     }
 

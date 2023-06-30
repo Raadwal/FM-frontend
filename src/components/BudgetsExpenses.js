@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import useCategory from "../hooks/useCategory";
@@ -21,35 +21,43 @@ const BudgetsExpenses = () => {
     const [ budget, getBudget] = useState([]);
     const [editingExpenseElement, setEditingExpenseElement] = useState(null);
 
-    const getBudgetElement = async() => {
-        const response = await axios.get(`${CATEGORIES_URL}/${category.id}/budget/${budgetId}`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        })
-        getBudget(response.data);
-    }
-    
-    const getAllExpensesElements = async () => {
-        const response = await axios.get(`${CATEGORIES_URL}/${category.id}/expenses/filter?startDate=${formatDate(budget.startDate)}&endDate=${formatDate(budget.endDate)}`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${auth.token}`,
-            }
-        })
-        getAllElements(response.data)
-    }
+    const getBudgetElement = useCallback(async () => {
+        try {
+            const response = await axios.get(`${CATEGORIES_URL}/${category.id}/budget/${budgetId}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
+            getBudget(response.data);
+        } catch (error) {
+            console.error("Failed to fetch budget element:", error);
+        }
+    }, [auth.token, budgetId, category.id]);
 
+    const getAllExpensesElements = useCallback(async () => {
+        try {
+            const response = await axios.get(`${CATEGORIES_URL}/${category.id}/expenses/filter?startDate=${formatDate(budget.startDate)}&endDate=${formatDate(budget.endDate)}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${auth.token}`,
+                }
+            });
+            getAllElements(response.data);
+        } catch (error) {
+            console.error("Failed to fetch all expenses elements:", error);
+        }
+    }, [auth.token, budget.endDate, budget.startDate, category.id]);
+    
     useEffect(() => {
         getBudgetElement();
-    }, []);
+    }, [getBudgetElement]);
 
     useEffect(() => {
         if (budget && budget.startDate && budget.endDate) {
             getAllExpensesElements();
         }
-    }, [budget]);
+    }, [budget, getAllExpensesElements]);
 
     const modifyExpenseElement = (element) => {
         setEditingExpenseElement(element);
@@ -65,7 +73,7 @@ const BudgetsExpenses = () => {
             });
             getAllExpensesElements();
         } catch (error) {
-            
+            console.error("Failed to delete element: ", error)
         }
     }
 

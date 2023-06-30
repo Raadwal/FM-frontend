@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import axios from "../../api/axios";
 import useAuth from "../../hooks/useAuth";
 import useCategory from '../../hooks/useCategory';
@@ -10,7 +10,7 @@ const ExpenseForm = ({ editingExpenseElement, setIsExpenseModalOpen, refreshData
     const CATEGORIES_URL = '/categories'
 
     const { auth } = useAuth();
-    const {category } = useCategory();
+    const {category} = useCategory();
 
     const [description, setDescription] = useState(editingExpenseElement ? editingExpenseElement.description : "");
     const [amount, setAmount] = useState(editingExpenseElement ? editingExpenseElement.amount : "");
@@ -37,7 +37,7 @@ const ExpenseForm = ({ editingExpenseElement, setIsExpenseModalOpen, refreshData
                 refreshData();
             } else {
 
-                await axios.post(`${CATEGORIES_URL}/${editingExpenseElement.category.id}/expense`, data, {
+                await axios.post(`${CATEGORIES_URL}/${category.id}/expense`, data, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${auth.token}`,    
@@ -46,8 +46,8 @@ const ExpenseForm = ({ editingExpenseElement, setIsExpenseModalOpen, refreshData
                 setIsExpenseModalOpen(false);
                 refreshData();
             }
-        }  catch (err) {
-
+        }  catch (error) {
+            console.error("Failed to save expense:", error);
         }
     }
         

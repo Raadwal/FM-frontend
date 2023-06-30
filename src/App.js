@@ -19,6 +19,7 @@ function App() {
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
 
+      {/* Secured routes */}
       <Route element={<RequireAuth />}>
         <Route path="/main" element={<MainLayout />}>
           <Route path="savings-goals" element={<SavingsGoals />} />
